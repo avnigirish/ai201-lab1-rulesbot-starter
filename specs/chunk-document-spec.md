@@ -116,11 +116,11 @@ handle these cases better, at the cost of more implementation complexity.
 **Actual chunk count produced across all 8 rule books:**
 
 ```
-[your answer here]
+149 total chunks
 ```
 
 **One thing that surprised you or didn't match your expectations:**
 
 ```
-[your answer here]
+The chunk counts were fairly uneven across the eight books, with Monopoly producing the most chunks and Ticket to Ride / Uno producing fewer than I expected.
 ```
