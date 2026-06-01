@@ -68,5 +68,44 @@ def retrieve(query, n_results=N_RESULTS):
     if _collection.count() == 0:
         return []
 
-    # Your implementation here.
-    return []
+    # Run the semantic search for our single query string. The API returns
+    # nested lists (one inner list per query), so we request documents,
+    # metadatas and distances and then index [0] to get the results for
+    # our single query.
+    results = _collection.query(
+        query_texts=[query],
+        n_results=n_results,
+        include=["documents", "metadatas", "distances"],
+    )
+
+    docs = results.get("documents", [])[0]
+    metadatas = results.get("metadatas", [])[0]
+    distances = results.get("distances", [])[0]
+
+    # Defensive fallback: ensure we have parallel lists
+    if not (docs and metadatas and distances):
+        return []
+
+    # Build the return list: each item is a dict with text, game, distance.
+    retrieved = []
+    for i in range(min(len(docs), len(metadatas), len(distances))):
+        meta = metadatas[i] or {}
+        game = meta.get("game") if isinstance(meta, dict) else None
+        retrieved.append({
+            "text": docs[i],
+            "game": game,
+            "distance": float(distances[i]),
+        })
+
+    # Results from Chroma are already ordered by relevance (closest first),
+    # but ensure ordering by ascending distance to match the spec.
+    retrieved.sort(key=lambda x: x["distance"])
+
+    # Temporary debug prints: show the top chunks in the terminal so you can
+    # verify retrieval quality before trying the UI. Remove these after testing.
+    chunks = retrieved
+    for chunk in chunks:
+        g = chunk.get("game") or "unknown"
+        print(f"[{g}] (dist: {chunk['distance']:.3f}) {chunk['text'][:80]}...")
+
+    return retrieved
