@@ -78,6 +78,9 @@ def retrieve(query, n_results=N_RESULTS):
         include=["documents", "metadatas", "distances"],
     )
 
+    # Chroma returns nested lists (one per query). We only have one query,
+    # so index [0] to get the first (and only) result list.
+    ids = results.get("ids", [])[0]
     docs = results.get("documents", [])[0]
     metadatas = results.get("metadatas", [])[0]
     distances = results.get("distances", [])[0]
@@ -88,10 +91,11 @@ def retrieve(query, n_results=N_RESULTS):
 
     # Build the return list: each item is a dict with text, game, distance.
     retrieved = []
-    for i in range(min(len(docs), len(metadatas), len(distances))):
+    for i in range(min(len(ids), len(docs), len(metadatas), len(distances))):
         meta = metadatas[i] or {}
         game = meta.get("game") if isinstance(meta, dict) else None
         retrieved.append({
+            "chunk_id": ids[i],
             "text": docs[i],
             "game": game,
             "distance": float(distances[i]),
@@ -100,12 +104,5 @@ def retrieve(query, n_results=N_RESULTS):
     # Results from Chroma are already ordered by relevance (closest first),
     # but ensure ordering by ascending distance to match the spec.
     retrieved.sort(key=lambda x: x["distance"])
-
-    # Temporary debug prints: show the top chunks in the terminal so you can
-    # verify retrieval quality before trying the UI. Remove these after testing.
-    chunks = retrieved
-    for chunk in chunks:
-        g = chunk.get("game") or "unknown"
-        print(f"[{g}] (dist: {chunk['distance']:.3f}) {chunk['text'][:80]}...")
 
     return retrieved

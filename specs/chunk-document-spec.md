@@ -122,5 +122,5 @@ handle these cases better, at the cost of more implementation complexity.
 **One thing that surprised you or didn't match your expectations:**
 
 ```
-The chunk counts were fairly uneven across the eight books, with Monopoly producing the most chunks and Ticket to Ride / Uno producing fewer than I expected.
+The chunk counts were fairly uneven across the eight books, with Monopoly producing the most chunks. I experimented with paragraph-aware chunking and brief filtering, but ultimately reverted to the original sliding-window parameters; the final measured total with the original strategy is 149 chunks.
 ```
